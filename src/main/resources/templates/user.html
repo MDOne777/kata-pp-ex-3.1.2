@@ -1,11 +1,35 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html lang="en">
 <head>
-    <title>Spring Security Example</title>
+    <title>Title</title>
 </head>
 <body>
-<h1>User, welcome spring boot security page!</h1>
+    <h1>User-info</h1>
+    <form th:action="@{/admin/save}" th:object="${user}" >
+        <input hidden type="text" th:field="${user.id}" />
 
+        <label for="name">Name: </label>
+        <input id="name" type="text" th:field="${user.name}" />
 
+        <label for="surname">Surname: </label>
+        <input id="surname" type="text" th:field="${user.surname}" />
+
+        <label for="age">Age: </label>
+        <input id="age" type="text" th:field="${user.age}" />
+
+        <label for="username">Username: </label>
+        <input id="username" type="text" th:field="${user.username}" />
+
+        <label for="password">Password: </label>
+        <input id="password" type="text" th:field="${user.password}" />
+
+        <label for="roles">Roles: </label>
+        <select id="roles" th:value="${user.roles}" multiple>
+            <option value="1" th:selected="${#strings.contains(user.roles, 'ROLE_ADMIN')}">ROLE_ADMIN</option>
+            <option value="2" th:selected="${#strings.contains(user.roles, 'ROLE_USER')}">ROLE_USER</option>
+        </select>
+
+        <input type="submit" value="Add" />
+    </form>
 </body>
 </html>
