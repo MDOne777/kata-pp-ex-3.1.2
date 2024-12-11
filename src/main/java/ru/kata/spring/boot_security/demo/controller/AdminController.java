@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.view.RedirectView;
 import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
+import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -20,10 +22,12 @@ import java.util.Set;
 public class AdminController {
 
     private final UserService userService;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, RoleRepository roleRepository) {
         this.userService = userService;
+        this.roleRepository = roleRepository;
     }
 
     @GetMapping()
@@ -37,18 +41,17 @@ public class AdminController {
 
     @GetMapping("/user")
     public String userInfo(Model model) {
-        User user = new User();
-
-        model.addAttribute("user", user);
+        model.addAttribute("user", new User());
+        model.addAttribute("roles", roleRepository.findAll());
 
         return "user";
     }
 
     @GetMapping("/save")
-    public RedirectView save(@ModelAttribute User user) {
-        System.out.println(user);
+    public RedirectView save(@ModelAttribute User user,
+                             @RequestParam(value = "roles") Set<Role> roles) {
 
-        //userService.save(user);
+        userService.save(user);
 
         return new RedirectView("/admin");
     }

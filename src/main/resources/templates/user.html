@@ -9,24 +9,24 @@
         <input hidden type="text" th:field="${user.id}" />
 
         <label for="name">Name: </label>
-        <input id="name" type="text" th:field="${user.name}" />
+        <input id="name" name="name" type="text" th:field="${user.name}" />
 
         <label for="surname">Surname: </label>
-        <input id="surname" type="text" th:field="${user.surname}" />
+        <input id="surname" name="surname" type="text" th:field="${user.surname}" />
 
         <label for="age">Age: </label>
-        <input id="age" type="text" th:field="${user.age}" />
+        <input id="age" name="age" type="text" th:field="${user.age}" />
 
         <label for="username">Username: </label>
-        <input id="username" type="text" th:field="${user.username}" />
+        <input id="username" name="username" type="text" th:field="${user.username}" />
 
         <label for="password">Password: </label>
-        <input id="password" type="text" th:field="${user.password}" />
+        <input id="password" name="password" type="text" th:field="${user.password}" />
 
         <label for="roles">Roles: </label>
-        <select id="roles" th:value="${user.roles}" multiple>
-            <option value="1" th:selected="${#strings.contains(user.roles, 'ROLE_ADMIN')}">ROLE_ADMIN</option>
-            <option value="2" th:selected="${#strings.contains(user.roles, 'ROLE_USER')}">ROLE_USER</option>
+        <select id="roles" name="roles" th:object="${roles}" multiple>
+            <option value="1">ROLE_ADMIN</option>
+            <option value="2">ROLE_USER</option>
         </select>
 
         <input type="submit" value="Add" />
