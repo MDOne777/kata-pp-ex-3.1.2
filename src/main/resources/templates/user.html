@@ -5,7 +5,7 @@
 </head>
 <body>
     <h1>User-info</h1>
-    <form th:action="@{/admin/save}" th:object="${user}" >
+    <form method="POST" th:action="@{/admin/save}" th:object="${user}" >
         <input hidden type="text" th:field="${user.id}" />
 
         <label for="name">Name: </label>
@@ -24,9 +24,8 @@
         <input id="password" name="password" type="text" th:field="${user.password}" />
 
         <label for="roles">Roles: </label>
-        <select id="roles" name="roles" th:object="${roles}" multiple>
-            <option value="1">ROLE_ADMIN</option>
-            <option value="2">ROLE_USER</option>
+        <select id="roles" name="roles" th:field="${roles}" multiple>
+            <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}"></option>
         </select>
 
         <input type="submit" value="Add" />
