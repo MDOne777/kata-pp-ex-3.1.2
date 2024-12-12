@@ -1,74 +1,76 @@
 package ru.kata.spring.boot_security.demo.controller;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
-import ru.kata.spring.boot_security.demo.entity.Role;
-import ru.kata.spring.boot_security.demo.entity.User;
-import ru.kata.spring.boot_security.demo.repository.RoleRepository;
+import ru.kata.spring.boot_security.demo.dao.RoleDao;
+import ru.kata.spring.boot_security.demo.model.Role;
+import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
     private final UserService userService;
-    private final RoleRepository roleRepository;
+    private final RoleDao roleDao;
 
     @Autowired
-    public AdminController(UserService userService, RoleRepository roleRepository) {
+    public AdminController(UserService userService, RoleDao roleDao) {
         this.userService = userService;
-        this.roleRepository = roleRepository;
+        this.roleDao = roleDao;
     }
 
-    @GetMapping()
-    public String index(Model model) {
-        List<User> users = this.userService.getAll();
-
-        model.addAttribute("users", users);
-
-        return "index";
+    @GetMapping
+    public String allUserTable(Model model) {
+        model.addAttribute("users", userService.findAllUsers());
+        return "users";
     }
 
     @GetMapping("/user")
-    public String userInfo(Model model) {
-        model.addAttribute("user", new User());
-        model.addAttribute("roles", (List<Role>) roleRepository.findAll());
-
+    public String showUser(@RequestParam(value = "id") Long id, Model model) {
+        model.addAttribute("user", userService.findUserById(id));
         return "user";
     }
 
-    @PostMapping("/save")
-    public RedirectView save(@ModelAttribute User user,
-                             @RequestParam(value = "roles") List<Role> roles) {
 
-        System.out.println(user);
-        System.out.println(roles);
-//        user.setRoles(roles);
-//        userService.save(user);
+    @GetMapping("/new")
+    public String createUserForm(@ModelAttribute("user") User user) {
+        List<Role> roles = roleDao.findAll();
+        user.setRoles(roles);
+        return "new";
+    }
 
-        return new RedirectView("/admin");
+    @PostMapping()
+    public String addUser(@ModelAttribute("user") User user) {
+        userService.saveUser(user);
+        return "redirect:/admin";
     }
 
     @GetMapping("/update")
-    public String update(@RequestParam("id") int id, Model model) {
-        User user = userService.get(id);
-
-        model.addAttribute("user", user);
-
-        return "user";
+    public String createUpdateForm(@RequestParam(value = "id") Long id, Model model) {
+        List<Role> roles = roleDao.findAll();
+        User user = userService.findUserById(id);
+        user.setRoles(roles);
+        model.addAttribute("user", userService.findUserById(id));
+        return "update";
     }
 
-    @GetMapping("/delete")
-    public RedirectView delete(@RequestParam("id") int id) {
-        userService.delete(id);
-
-        return new RedirectView("/");
+    @PostMapping("/user")
+    public String updateUser(@ModelAttribute("user") User user) {
+        userService.updateUser(user);
+        return "redirect:/admin";
     }
+
+    @PostMapping("/delete")
+    public String deleteUser(@RequestParam(value = "id") Long id) {
+        userService.deleteUser(id);
+        return "redirect:/admin";
+    }
+
+
 }

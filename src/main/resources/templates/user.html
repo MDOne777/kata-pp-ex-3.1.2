@@ -1,34 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
-    <title>Title</title>
+    <meta charset="UTF-8">
+    <title>User</title>
 </head>
 <body>
-    <h1>User-info</h1>
-    <form method="POST" th:action="@{/admin/save}" th:object="${user}" >
-        <input hidden type="text" th:field="${user.id}" />
-
-        <label for="name">Name: </label>
-        <input id="name" name="name" type="text" th:field="${user.name}" />
-
-        <label for="surname">Surname: </label>
-        <input id="surname" name="surname" type="text" th:field="${user.surname}" />
-
-        <label for="age">Age: </label>
-        <input id="age" name="age" type="text" th:field="${user.age}" />
-
-        <label for="username">Username: </label>
-        <input id="username" name="username" type="text" th:field="${user.username}" />
-
-        <label for="password">Password: </label>
-        <input id="password" name="password" type="text" th:field="${user.password}" />
-
-        <label for="roles">Roles: </label>
-        <select id="roles" name="roles" th:field="${roles}" multiple>
-            <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}"></option>
-        </select>
-
-        <input type="submit" value="Add" />
+<table border="2">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user : ${user}">
+        <td><p th:text="${user.getId()}"></p></td>
+        <td><p th:text="${user.getUsername()}"></p></td>
+        <td><p th:text="${user.getEmail()}"></p></td>
+        <td><p th:text="${user.roles}"></p></td>
+    </tr>
+    </tbody>
+</table>
+<br>
+<br>
+<div sec:authorize="hasRole('ROLE_ADMIN')">
+    <a th:href="@{/admin/update(id=${user.getId()})}">
+    <br/><br/>
+    <form th:method="POST" th:action="@{/admin/delete(id=${user.getId()})} ">
+        <input type="submit" value="Delete">
     </form>
+</div>
+<br/><br/>
+<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Выход">
+</form>
+
 </body>
 </html>
