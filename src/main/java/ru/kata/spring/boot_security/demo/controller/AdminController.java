@@ -10,6 +10,7 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -26,14 +27,22 @@ public class AdminController {
     }
 
     @GetMapping
-    public String allUserTable(Model model) {
-        model.addAttribute("users", userService.findAllUsers());
+    public String allUserTable(Model model, Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        List<User> users = userService.findAllUsers();
+        List<Role> roles = roleDao.findAll();
+
+        model.addAttribute("user", user);
+        model.addAttribute("users", users);
+        model.addAttribute("roles", roles);
+
         return "users";
     }
 
     @GetMapping("/user")
     public String showUser(@RequestParam(value = "id") Long id, Model model) {
         model.addAttribute("user", userService.findUserById(id));
+
         return "user";
     }
 
@@ -42,12 +51,14 @@ public class AdminController {
     public String createUserForm(@ModelAttribute("user") User user) {
         List<Role> roles = roleDao.findAll();
         user.setRoles(roles);
+
         return "new";
     }
 
-    @PostMapping()
+    @PostMapping("/new")
     public String addUser(@ModelAttribute("user") User user) {
         userService.saveUser(user);
+
         return "redirect:/admin";
     }
 
@@ -56,21 +67,23 @@ public class AdminController {
         List<Role> roles = roleDao.findAll();
         User user = userService.findUserById(id);
         user.setRoles(roles);
+
         model.addAttribute("user", userService.findUserById(id));
+
         return "update";
     }
 
-    @PostMapping("/user")
+    @PostMapping("/update")
     public String updateUser(@ModelAttribute("user") User user) {
         userService.updateUser(user);
+
         return "redirect:/admin";
     }
 
     @PostMapping("/delete")
     public String deleteUser(@RequestParam(value = "id") Long id) {
         userService.deleteUser(id);
+
         return "redirect:/admin";
     }
-
-
 }
