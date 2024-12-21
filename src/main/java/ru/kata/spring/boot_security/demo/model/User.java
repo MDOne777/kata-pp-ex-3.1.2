@@ -5,7 +5,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -13,40 +14,39 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @Column(name = "username")
+    @Column(name = "username", unique = true)
     private String username;
-
-    @Column(name = "email")
-    private String email;
 
     @Column(name = "password")
     private String password;
 
+    @Column(name = "name")
+    private String firstName;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    List<Role> roles;
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Column(name = "email")
+    private String email;
+
+    @ManyToMany(fetch = FetchType.LAZY, targetEntity = Role.class,
+            cascade = {CascadeType.MERGE, CascadeType.DETACH})
+    private Set<Role> roles;
 
 
-    public User(String username, String email, String password, List<Role> roles) {
+    public User() {}
+
+    public User(String username, String password, String firstName,
+                String lastName, String email, Set<Role> roles) {
         this.username = username;
-        this.email = email;
         this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
         this.roles = roles;
     }
-
-    public User() {
-    }
-
-
-    public User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
-
 
     public Long getId() {
         return id;
@@ -56,8 +56,20 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -68,10 +80,13 @@ public class User implements UserDetails {
         this.email = email;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -108,13 +123,25 @@ public class User implements UserDetails {
         return true;
     }
 
-
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(roles, user.roles);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username, password, roles);
     }
 
     @Override
@@ -122,12 +149,8 @@ public class User implements UserDetails {
         return "User{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", roles=" + roles +
                 '}';
     }
 }
-
-
-

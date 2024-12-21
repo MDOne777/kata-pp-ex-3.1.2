@@ -1,79 +1,86 @@
 package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.dao.UserDao;
+import ru.kata.spring.boot_security.demo.dao.UserRepository;
 import ru.kata.spring.boot_security.demo.model.User;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
-    @PersistenceContext
-    private EntityManager em;
-
-
-    private final UserDao userDao;
+    private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserDao userDao) {
-        this.userDao = userDao;
-
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-
-    @Override
-    public User findUserById(Long userId) {
-        Optional<User> userFromDb = userDao.findById(userId);
-        return userFromDb.orElse(new User());
-    }
-
-    @Override
-    public List<User> findAllUsers() {
-        return userDao.findAll();
+    @Autowired
+    @Lazy
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    @Transactional
-    public void saveUser(User user) {
-        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
-        user.setRoles(user.getRoles());
-        userDao.save(user);
-    }
-
-    @Override
-    @Transactional
-    public boolean updateUser(User user) {
-        Optional<User> userFromDb = userDao.findById(user.getId());
-        if (userFromDb.isPresent()) {
-            userFromDb.get().setUsername(user.getUsername());
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found");
         }
-        userFromDb.get().setPassword(user.getPassword());
-        userDao.save(userFromDb.get());
-        return true;
+        return user;
     }
 
     @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
     @Transactional
-    public boolean deleteUser(Long userId) {
-        if (userDao.findById(userId).isPresent()) {
-            userDao.deleteById(userId);
-            return true;
+    @Override
+    public void add(User user) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
+    }
+
+    @Transactional
+    @Override
+    public void update(User user) {
+        User savedUser = userRepository.getReferenceById(user.getId());
+
+        if (!savedUser.getPassword().equals(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        return false;
+
+        userRepository.save(user);
+    }
+
+    @Transactional
+    @Override
+    public void delete(User user) {
+        userRepository.delete(user);
     }
 
     @Override
-    public User findByUsername(String username) {
-        return userDao.findByUsername(username);
+    public User getUserById(int id) {
+        return userRepository.getReferenceById((long) id);
     }
 
+    @Override
+    public User findById(int id) {
+        return userRepository.findById((long) id).get();
+    }
 
+    @Override
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 }
